@@ -1,29 +1,15 @@
 #pragma once
 #include <stdint.h>
+#include <open62541/types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct opcua_string
-{
-  uint32_t length;
-  char* data;
-};
-
-struct opcua_nodeId
-{
-  uint8_t encoding; //0..numeric, 3..string
-  uint16_t nsIx;
-  union
-  {
-    uint16_t numeric;
-    struct opcua_string string;
-  }id;
-};
-
-void opcua_process_CreateMonitoredItemsRequest(struct opcua_nodeId* ids, int idsSize);
-void opcua_process_DeleteMonitoredItemsRequest(uint32_t* ids, int idsSize);
+void opcua_process_CreateMonitoredItemsRequest(const UA_CreateMonitoredItemsRequest*);
+void opcua_process_CreateMonitoredItemsResponse(const UA_CreateMonitoredItemsResponse*);
+void opcua_process_DeleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest*);
+void opcua_process_DeleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsResponse*);
 #ifdef __cplusplus
 }
 #endif
