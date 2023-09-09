@@ -120,6 +120,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 #
 project(tcpdump C)
 
+add_subdirectory(opcua)
+
 #
 # For checking if a compiler flag works and adding it if it does.
 #
@@ -1231,6 +1233,7 @@ set(NETDISSECT_SOURCE_LIST_C
     print-zep.c
     print-zephyr.c
     print-zeromq.c
+    print-opcua.c
     ${LOCALSRC}
     signature.c
     strtoaddr.c
@@ -1339,6 +1342,7 @@ if(NOT C_ADDITIONAL_FLAGS STREQUAL "")
     set_target_properties(tcpdump PROPERTIES COMPILE_FLAGS ${C_ADDITIONAL_FLAGS})
 endif()
 target_link_libraries(tcpdump netdissect ${TCPDUMP_LINK_LIBRARIES})
+target_link_libraries(tcpdump opcua)
 
 ######################################
 # Write out the config.h file

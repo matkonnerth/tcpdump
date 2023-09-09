@@ -798,6 +798,10 @@ tcp_print(netdissect_options *ndo,
         } else if (IS_SRC_OR_DST_PORT(RTSP_PORT_ALT)) {
                 ND_PRINT(": ");
                 rtsp_print(ndo, bp, length);
+        } else if (IS_SRC_OR_DST_PORT(4840))
+        {
+                ND_PRINT(": ");
+                opcua_print(ndo, bp, length);
         } else if ((IS_SRC_OR_DST_PORT(NFS_PORT)) &&
                  length >= 4) {
                 /*
