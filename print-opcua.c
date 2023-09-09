@@ -22,6 +22,8 @@
 #include "extract.h"
 #include "netdissect.h"
 #include <opcua/opcua_api.h>
+#include <stdlib.h>
+#include <assert.h>
 
 struct opcua_message_header
 {
@@ -29,16 +31,49 @@ struct opcua_message_header
     uint32_t size;
 };
 
-static void handle_NodeId(netdissect_options *ndo, const u_char *pptr,
+static struct opcua_string handle_String(netdissect_options *ndo, const u_char** pptr)
+{
+  const u_char* act = *pptr;
+  struct opcua_string s;
+  s.data=NULL;
+  s.length=GET_LE_U_4(act);
+  act+=4;
+  s.data=malloc(s.length);
+  memcpy(s.data, act, s.length);
+  act+=s.length;
+  *pptr=act;
+  return s;
+}
+
+static struct opcua_nodeId handle_NodeId(netdissect_options *ndo, const u_char **pptr,
                           u_int len)
 {
-  uint8_t encodingMask=*pptr;
-  pptr+=1;
-  uint16_t nsIx = GET_LE_U_2(pptr);
-  pptr+=2;
-  uint16_t id = GET_LE_U_2(pptr);
-  pptr+=2;
-  ND_PRINT("nodeId: %u", id);
+  const u_char* act = *pptr;
+  uint8_t encodingMask=*((uint8_t*)act);
+  act+=1;
+  uint16_t nsIdx = GET_LE_U_2(act);
+  act+=2;
+
+  struct opcua_nodeId nodeId;
+  nodeId.encoding=encodingMask;
+  nodeId.nsIx = nsIdx;
+
+  switch(encodingMask)
+  {
+    case 0:
+      nodeId.id.numeric=GET_LE_U_2(act);
+      act+=2;
+      break;
+    case 3:
+      nodeId.id.string = handle_String(ndo, &act);
+      break;
+    default:
+      assert(0);
+  }
+
+  *pptr=act;
+
+  return nodeId;
 }
 
 static void handle_createMonitoredItemsRequest(netdissect_options *ndo,
@@ -46,22 +81,55 @@ static void handle_createMonitoredItemsRequest(netdissect_options *ndo,
   pptr+=46; //TODO: requestHeader
 
   uint32_t subscriptionId = GET_LE_U_4(pptr);
-  pptr+4;
+  pptr+=4;
   ND_PRINT("subscriptionId: %u", subscriptionId);
 
-  pptr+4; //timestamps to return
+  pptr+=4; //timestamps to return
 
   //Array of monitoredItemsCreateRequest
   uint32_t arraySize = GET_LE_U_4(pptr);
+  pptr+=4;
+
+  struct opcua_nodeId* ids = (struct opcua_nodeId*)calloc(arraySize, sizeof(struct opcua_nodeId));
 
   for(uint32_t i=0; i<arraySize; ++i)
   {
-    handle_NodeId(ndo, pptr, len);
+    //ItemToMonitor
+    ids[i] = handle_NodeId(ndo, &pptr, len);    
+    pptr+=4; //attributeId
+    pptr+=4; //indexRange
+    pptr+=6; //dataEncoding
+    //RequestParameters
+    pptr+=4; //clientHandle
+    pptr+=8; //samplingInterval    
+    pptr+=3; //Filter - ExtensionObject, in this case empty filter
+    pptr+=4; //queue size
+    pptr+=1; //discard oldest
   }
+  opcua_process_CreateMonitoredItemsRequest(ids, arraySize);
+}
 
+static void handle_deleteMonitoredItemsRequest(netdissect_options *ndo,
+                                              const u_char *pptr, u_int len) {
+  pptr+=46; //TODO: requestHeader
 
+  uint32_t subscriptionId = GET_LE_U_4(pptr);
+  pptr+=4;
+  ND_PRINT("subscriptionId: %u", subscriptionId);
 
-  opcua_process_CreateMonitoredItemsRequest();
+  //Array of monitoredItemsCreateRequest
+  uint32_t arraySize = GET_LE_U_4(pptr);
+  pptr+=4;
+
+  uint32_t* ids = (uint32_t*)calloc(arraySize, sizeof(uint32_t));
+
+  for(uint32_t i=0; i<arraySize; ++i)
+  {
+    //ItemToMonitor
+    ids[i] = GET_LE_U_4(pptr);
+    pptr+=4;
+  }
+  opcua_process_DeleteMonitoredItemsRequest(ids, arraySize);
 }
 
     static void handleOpcUaService(netdissect_options *ndo, const u_char *pptr,
@@ -82,13 +150,13 @@ static void handle_createMonitoredItemsRequest(netdissect_options *ndo,
     case 634:
         ND_PRINT(", READ_RESPONSE");
         break;
-    case 781:
-      ND_PRINT(", CREATE_MONITOREDITEMS_REQUEST");
+    case 751:
+      ND_PRINT("\n\n\nCREATE_MONITOREDITEMS_REQUEST");
       handle_createMonitoredItemsRequest(ndo, pptr, len);
       break;
-    case 784:
-      ND_PRINT(", DELETE_MONITOREDITEMS_RESPONSE");
-      opcua_process_DeleteMonitoredItemsRequest();
+    case 781:
+      ND_PRINT(", DELETE_MONITOREDITEMS_REQUEST");
+      handle_deleteMonitoredItemsRequest(ndo, pptr, len);
       break;
     default:
         ND_PRINT(", UNHANDLED REQUEST");
