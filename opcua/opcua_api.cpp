@@ -1,14 +1,17 @@
 #include "opcua_api.h"
 #include <iostream>
+#include "Server.h"
+
+opcua::Server myServer{};
 
 void opcua_process_CreateMonitoredItemsRequest(const UA_CreateMonitoredItemsRequest* req)
 {
-    std::cout << "createMonitoredItemsRequest" << "\n";
+    myServer.createMonitoredItemsRequest(req);
 };
 
 void opcua_process_CreateMonitoredItemsResponse(const UA_CreateMonitoredItemsResponse* resp)
 {
-    std::cout << "createMonitoredItemsRequest" << "\n";
+    myServer.createMonitoredItemsResponse(resp);
 };
 
 void opcua_process_DeleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest* req)
