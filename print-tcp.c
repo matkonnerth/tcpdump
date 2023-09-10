@@ -802,38 +802,44 @@ tcp_print(netdissect_options *ndo,
         {
                 ND_PRINT(": ");
                 opcua_print(ndo, bp, length);
-        } else if ((IS_SRC_OR_DST_PORT(NFS_PORT)) &&
-                 length >= 4) {
-                /*
-                 * If data present, header length valid, and NFS port used,
-                 * assume NFS.
-                 * Pass offset of data plus 4 bytes for RPC TCP msg length
-                 * to NFS print routines.
-                 */
-                uint32_t fraglen;
-                const struct sunrpc_msg *rp;
-                enum sunrpc_msg_type direction;
-
-                fraglen = GET_BE_U_4(bp) & 0x7FFFFFFF;
-                if (fraglen > (length) - 4)
-                        fraglen = (length) - 4;
-                rp = (const struct sunrpc_msg *)(bp + 4);
-                if (ND_TTEST_4(rp->rm_direction)) {
-                        direction = (enum sunrpc_msg_type) GET_BE_U_4(rp->rm_direction);
-                        if (dport == NFS_PORT && direction == SUNRPC_CALL) {
-                                ND_PRINT(": NFS request xid %u ",
-                                         GET_BE_U_4(rp->rm_xid));
-                                nfsreq_noaddr_print(ndo, (const u_char *)rp, fraglen, (const u_char *)ip);
-                                return;
-                        }
-                        if (sport == NFS_PORT && direction == SUNRPC_REPLY) {
-                                ND_PRINT(": NFS reply xid %u ",
-                                         GET_BE_U_4(rp->rm_xid));
-                                nfsreply_noaddr_print(ndo, (const u_char *)rp, fraglen, (const u_char *)ip);
-                                return;
-                        }
-                }
+        } else if (IS_SRC_OR_DST_PORT(4850)) {
+                ND_PRINT(": ");
+                opcua_print(ndo, bp, length);
         }
+        else if (IS_SRC_OR_DST_PORT(4860)) {
+                ND_PRINT(": ");
+                opcua_print(ndo, bp, length);
+        }
+else if ((IS_SRC_OR_DST_PORT(NFS_PORT)) && length >= 4) {
+  /*
+   * If data present, header length valid, and NFS port used,
+   * assume NFS.
+   * Pass offset of data plus 4 bytes for RPC TCP msg length
+   * to NFS print routines.
+   */
+  uint32_t fraglen;
+  const struct sunrpc_msg *rp;
+  enum sunrpc_msg_type direction;
+
+  fraglen = GET_BE_U_4(bp) & 0x7FFFFFFF;
+  if (fraglen > (length)-4)
+    fraglen = (length)-4;
+  rp = (const struct sunrpc_msg *)(bp + 4);
+  if (ND_TTEST_4(rp->rm_direction)) {
+    direction = (enum sunrpc_msg_type)GET_BE_U_4(rp->rm_direction);
+    if (dport == NFS_PORT && direction == SUNRPC_CALL) {
+      ND_PRINT(": NFS request xid %u ", GET_BE_U_4(rp->rm_xid));
+      nfsreq_noaddr_print(ndo, (const u_char *)rp, fraglen, (const u_char *)ip);
+      return;
+    }
+    if (sport == NFS_PORT && direction == SUNRPC_REPLY) {
+      ND_PRINT(": NFS reply xid %u ", GET_BE_U_4(rp->rm_xid));
+      nfsreply_noaddr_print(ndo, (const u_char *)rp, fraglen,
+                            (const u_char *)ip);
+      return;
+    }
+  }
+}
 
         return;
 bad:
