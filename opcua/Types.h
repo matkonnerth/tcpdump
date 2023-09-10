@@ -42,6 +42,11 @@ public:
     return os;
   }
 
+  UA_UInt32 Id() const
+  {
+    return m_monitoredItemId;
+  }
+
 private:
   UA_UInt32 m_subscriptionId;
   UA_NodeId m_nodeId;
@@ -72,5 +77,31 @@ public:
 
 private:
   UA_CreateMonitoredItemsRequest m_raw;
+};
+
+class DeleteMonitoredItemsRequest {
+public:
+  DeleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest *raw) {
+    UA_DeleteMonitoredItemsRequest_copy(raw, &m_raw);
+  }
+  ~DeleteMonitoredItemsRequest() {
+    UA_DeleteMonitoredItemsRequest_clear(&m_raw);
+  }
+
+  const UA_DeleteMonitoredItemsRequest *raw() const { return &m_raw; }
+
+  DeleteMonitoredItemsRequest(const DeleteMonitoredItemsRequest &other) {
+    UA_DeleteMonitoredItemsRequest_copy(&other.m_raw, &m_raw);
+  }
+
+  DeleteMonitoredItemsRequest &
+  operator=(const DeleteMonitoredItemsRequest &other) {
+    UA_DeleteMonitoredItemsRequest_clear(&m_raw);
+    UA_DeleteMonitoredItemsRequest_copy(&other.m_raw, &m_raw);
+    return *this;
+  }
+
+private:
+  UA_DeleteMonitoredItemsRequest m_raw;
 };
 } // namespace opcua

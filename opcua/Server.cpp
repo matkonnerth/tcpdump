@@ -1,8 +1,10 @@
 #include "Server.h"
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using opcua::CreateMonitoredItemsRequest;
+using opcua::DeleteMonitoredItemsRequest;
 using opcua::Server;
 
 void Server::createMonitoredItemsRequest(
@@ -54,4 +56,47 @@ void Server::printMonitoredItems() {
   }
 }
 
-void Server::deleteMonitoredItemsRequest(){};
+void Server::deleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest *req)
+{
+  DeleteMonitoredItemsRequest r{req};
+  m_pendingDeleteMonitoredsRequests.push_back(r);
+}
+void Server::deleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsResponse *resp)
+{
+  auto req = getDeleteMonitoredItemsRequest(resp->responseHeader.requestHandle);
+  if (!req) {
+    std::cout << "request not found"
+              << "\n";
+    return;
+  }
+  handleDeleteMonitoredItems(*req, *resp);
+}
+
+std::optional<DeleteMonitoredItemsRequest>
+Server::getDeleteMonitoredItemsRequest(UA_UInt32 requestHandle) {
+  // get the request
+  for (const auto &req : m_pendingDeleteMonitoredsRequests) {
+    if (req.raw()->requestHeader.requestHandle == requestHandle) {
+      return req;
+    }
+  }
+  return std::nullopt;
+}
+
+void Server::handleDeleteMonitoredItems(
+    const DeleteMonitoredItemsRequest &req,
+    const UA_DeleteMonitoredItemsResponse &resp) {
+
+  // TODO: check statuscodes of response, resultsSize must be the same as
+  // requestSize ...
+  for (auto i = 0u; i < req.raw()->monitoredItemIdsSize; ++i) {
+    auto idToErase = req.raw()->monitoredItemIds[i];
+    m_monitoredItems.erase(std::remove_if(m_monitoredItems.begin(), m_monitoredItems.end(),
+                           [&idToErase](const MonitoredItem& i) {
+                             return i.Id()==idToErase;
+                           }),
+            m_monitoredItems.end());
+  }
+
+  printMonitoredItems();
+}

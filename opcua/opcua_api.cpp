@@ -16,10 +16,10 @@ void opcua_process_CreateMonitoredItemsResponse(const UA_CreateMonitoredItemsRes
 
 void opcua_process_DeleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest* req)
 {
-  std::cout << "deleteMonitoredItemsRequest" << "\n";
+  myServer.deleteMonitoredItemsRequest(req);
 }
 
-void opcua_process_DeleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsResponse* req)
+void opcua_process_DeleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsResponse* resp)
 {
-  std::cout << "deleteMonitoredItemsRequest" << "\n";
+  myServer.deleteMonitoredItemsResponse(resp);
 }
