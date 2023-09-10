@@ -42,10 +42,7 @@ public:
     return os;
   }
 
-  UA_UInt32 Id() const
-  {
-    return m_monitoredItemId;
-  }
+  UA_UInt32 Id() const { return m_monitoredItemId; }
 
 private:
   UA_UInt32 m_subscriptionId;
@@ -103,5 +100,28 @@ public:
 
 private:
   UA_DeleteMonitoredItemsRequest m_raw;
+};
+
+class ActivateSessionRequest {
+public:
+  ActivateSessionRequest(const UA_ActivateSessionRequest *raw) {
+    UA_ActivateSessionRequest_copy(raw, &m_raw);
+  }
+  ~ActivateSessionRequest() { UA_ActivateSessionRequest_clear(&m_raw); }
+
+  const UA_ActivateSessionRequest *raw() const { return &m_raw; }
+
+  ActivateSessionRequest(const ActivateSessionRequest &other) {
+    UA_ActivateSessionRequest_copy(&other.m_raw, &m_raw);
+  }
+
+  ActivateSessionRequest &operator=(const ActivateSessionRequest &other) {
+    UA_ActivateSessionRequest_clear(&m_raw);
+    UA_ActivateSessionRequest_copy(&other.m_raw, &m_raw);
+    return *this;
+  }
+
+private:
+  UA_ActivateSessionRequest m_raw;
 };
 } // namespace opcua

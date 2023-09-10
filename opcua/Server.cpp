@@ -5,6 +5,7 @@
 
 using opcua::CreateMonitoredItemsRequest;
 using opcua::DeleteMonitoredItemsRequest;
+using opcua::ActivateSessionRequest;
 using opcua::Server;
 
 void Server::createMonitoredItemsRequest(
@@ -99,4 +100,48 @@ void Server::handleDeleteMonitoredItems(
   }
 
   printMonitoredItems();
+}
+
+std::optional<ActivateSessionRequest>
+Server::getActivateSessionRequest(UA_UInt32 requestHandle) {
+  // get the request
+  for (const auto &req : m_pendingActivateSessionRequests) {
+    if (req.raw()->requestHeader.requestHandle == requestHandle) {
+      return req;
+    }
+  }
+  return std::nullopt;
+}
+
+void Server::activateSessionRequest(
+    const UA_ActivateSessionRequest *req) {
+  ActivateSessionRequest r{req};
+  m_pendingActivateSessionRequests.push_back(r);
+}
+
+void Server::activateSessionResponse(
+    const UA_ActivateSessionResponse *resp) {
+  auto req = getActivateSessionRequest(resp->responseHeader.requestHandle);
+  if (!req) {
+    std::cout << "request not found"
+              << "\n";
+    return;
+  }
+  handleActivateSession(*req, *resp);
+}
+
+void Server::handleActivateSession(
+    const ActivateSessionRequest &req,
+    const UA_ActivateSessionResponse &resp) {
+
+      std::cout << "Activate Session" << "\n";
+      std::cout << "locale ids: " << "\n";
+
+  // TODO: check statuscodes of response, resultsSize must be the same as
+  // requestSize ...
+  for(auto i=0u; i<req.raw()->localeIdsSize; ++i)
+  {
+    std::string id{(char*)req.raw()->localeIds[i].data, req.raw()->localeIds[i].length};
+    std::cout << id << ", ";
+  }
 }

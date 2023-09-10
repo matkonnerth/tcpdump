@@ -23,3 +23,12 @@ void opcua_process_DeleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsRes
 {
   myServer.deleteMonitoredItemsResponse(resp);
 }
+
+void opcua_process_ActivateSessionRequest(const UA_ActivateSessionRequest *req)
+{
+  myServer.activateSessionRequest(req);
+}
+void opcua_process_ActivateSessionResponse(const UA_ActivateSessionResponse *resp)
+{
+  myServer.activateSessionResponse(resp);
+}
