@@ -16,6 +16,8 @@ void opcua_process_DeleteMonitoredItemsResponse(
     const UA_DeleteMonitoredItemsResponse *);
 void opcua_process_ActivateSessionRequest(const UA_ActivateSessionRequest *);
 void opcua_process_ActivateSessionResponse(const UA_ActivateSessionResponse *);
+void opcua_process_CreateSessionRequest(const UA_CreateSessionRequest*);
+void opcua_process_CreateSessionResponse(const UA_CreateSessionResponse*);
 #ifdef __cplusplus
 }
 #endif

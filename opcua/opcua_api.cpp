@@ -33,3 +33,13 @@ void opcua_process_ActivateSessionResponse(const UA_ActivateSessionResponse *res
 {
   myServer.activateSessionResponse(resp);
 }
+
+void opcua_process_CreateSessionRequest(const UA_CreateSessionRequest* req)
+{
+  myServer.createSessionRequest(req);
+}
+
+void opcua_process_CreateSessionResponse(const UA_CreateSessionResponse* resp)
+{
+  myServer.createSessionResponse(resp);
+}

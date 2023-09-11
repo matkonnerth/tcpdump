@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 namespace opcua {
 
@@ -30,6 +31,31 @@ private:
   std::ofstream logfile;
 };
 
+template <typename T>
+class RequestContainer
+{
+public:
+  void add(const T& request)
+  {
+    m_requests.push_back(request);
+  }
+
+  std::optional<T> get(UA_UInt32 requestHandle)
+  {
+    // get the request
+    for (const auto &req : m_requests) {
+      if (req.raw()->requestHeader.requestHandle == requestHandle) {
+        return req;
+      }
+    }
+    return std::nullopt;
+  }
+
+
+private:
+  std::vector<T> m_requests{};
+};
+
 class Server {
 public:
   void createMonitoredItemsRequest(const UA_CreateMonitoredItemsRequest *);
@@ -38,26 +64,27 @@ public:
   void deleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest *);
   void deleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsResponse *);
 
+  void createSessionRequest(const UA_CreateSessionRequest *);
+  void createSessionResponse(const UA_CreateSessionResponse *);
+
   void activateSessionRequest(const UA_ActivateSessionRequest *);
   void activateSessionResponse(const UA_ActivateSessionResponse *);
 
 private:
   Logger m_logger{};
-  std::optional<CreateMonitoredItemsRequest>
-  getCreateMonitoredItemsRequest(UA_UInt32 requestHandle);
-  std::optional<DeleteMonitoredItemsRequest>
-  getDeleteMonitoredItemsRequest(UA_UInt32 requestHandle);
-  std::optional<ActivateSessionRequest>
-  getActivateSessionRequest(UA_UInt32 requestHandle);
+  
   void handleCreateMonitoredItems(const CreateMonitoredItemsRequest&, const UA_CreateMonitoredItemsResponse&);
   void handleDeleteMonitoredItems(const DeleteMonitoredItemsRequest &,
                                   const UA_DeleteMonitoredItemsResponse &);
   void handleActivateSession(const ActivateSessionRequest &,
                                   const UA_ActivateSessionResponse &);
+  void handleCreateSession(const CreateSessionRequest &,
+                                  const UA_CreateSessionResponse &);
   void printMonitoredItems();
-  std::vector<CreateMonitoredItemsRequest> m_pendingCreateMonitoredsRequests{};
-  std::vector<DeleteMonitoredItemsRequest> m_pendingDeleteMonitoredsRequests{};
-  std::vector<ActivateSessionRequest> m_pendingActivateSessionRequests{};
+  RequestContainer<CreateMonitoredItemsRequest> m_pendingCreateMonitoredItemsRequests{};
+  RequestContainer<DeleteMonitoredItemsRequest> m_pendingDeleteMonitoredItemsRequests{};
+  RequestContainer<ActivateSessionRequest> m_pendingActivateSessionRequests{};
+  RequestContainer<CreateSessionRequest> m_pendingCreateSessionRequests{};
   std::vector<MonitoredItem> m_monitoredItems{};
 };
 }; // namespace opcua

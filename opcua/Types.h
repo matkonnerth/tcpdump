@@ -124,4 +124,27 @@ public:
 private:
   UA_ActivateSessionRequest m_raw;
 };
+
+class CreateSessionRequest {
+public:
+  CreateSessionRequest(const UA_CreateSessionRequest *raw) {
+    UA_CreateSessionRequest_copy(raw, &m_raw);
+  }
+  ~CreateSessionRequest() { UA_CreateSessionRequest_clear(&m_raw); }
+
+  const UA_CreateSessionRequest *raw() const { return &m_raw; }
+
+  CreateSessionRequest(const CreateSessionRequest &other) {
+    UA_CreateSessionRequest_copy(&other.m_raw, &m_raw);
+  }
+
+  CreateSessionRequest &operator=(const CreateSessionRequest &other) {
+    UA_CreateSessionRequest_clear(&m_raw);
+    UA_CreateSessionRequest_copy(&other.m_raw, &m_raw);
+    return *this;
+  }
+
+private:
+  UA_CreateSessionRequest m_raw;
+};
 } // namespace opcua

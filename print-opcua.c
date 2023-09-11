@@ -100,6 +100,22 @@ static void handleOpcUaService(netdissect_options *ndo, const u_char *pptr,
     opcua_process_ActivateSessionResponse(&req);
     UA_ActivateSessionResponse_clear(&req);
   } break;
+  case 461: {
+    UA_CreateSessionRequest req;
+    UA_CreateSessionRequest_init(&req);
+    UA_decodeBinary(&bs, &req, &UA_TYPES[UA_TYPES_CREATESESSIONREQUEST],
+                    NULL);
+    opcua_process_CreateSessionRequest(&req);
+    UA_CreateSessionRequest_clear(&req);
+  } break;
+  case 464: {
+    UA_CreateSessionResponse req;
+    UA_CreateSessionResponse_init(&req);
+    UA_decodeBinary(&bs, &req, &UA_TYPES[UA_TYPES_CREATESESSIONRESPONSE],
+                    NULL);
+    opcua_process_CreateSessionResponse(&req);
+    UA_CreateSessionResponse_clear(&req);
+  } break;
   default:
     ND_PRINT(", UNHANDLED REQUEST");
     break;

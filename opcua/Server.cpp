@@ -5,31 +5,21 @@
 using opcua::CreateMonitoredItemsRequest;
 using opcua::DeleteMonitoredItemsRequest;
 using opcua::ActivateSessionRequest;
+using opcua::CreateSessionRequest;
 using opcua::Server;
 
 void Server::createMonitoredItemsRequest(
     const UA_CreateMonitoredItemsRequest *req) {
   CreateMonitoredItemsRequest r{req};
-  m_pendingCreateMonitoredsRequests.push_back(r);
+  m_pendingCreateMonitoredItemsRequests.add(r);
 
   m_logger.log() << "createMonitoredItemsRequest" << std::endl;
 
 }
 
-std::optional<CreateMonitoredItemsRequest>
-Server::getCreateMonitoredItemsRequest(UA_UInt32 requestHandle) {
-  // get the request
-  for (const auto &req : m_pendingCreateMonitoredsRequests) {
-    if (req.raw()->requestHeader.requestHandle == requestHandle) {
-      return req;
-    }
-  }
-  return std::nullopt;
-}
-
 void Server::createMonitoredItemsResponse(
     const UA_CreateMonitoredItemsResponse *resp) {
-  auto req = getCreateMonitoredItemsRequest(resp->responseHeader.requestHandle);
+  auto req = m_pendingCreateMonitoredItemsRequests.get(resp->responseHeader.requestHandle);
   if (!req) {
     std::cout << "request not found"
               << "\n";
@@ -62,28 +52,17 @@ void Server::printMonitoredItems() {
 void Server::deleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest *req)
 {
   DeleteMonitoredItemsRequest r{req};
-  m_pendingDeleteMonitoredsRequests.push_back(r);
+  m_pendingDeleteMonitoredItemsRequests.add(r);
   m_logger.log() << "deleteMonitoredItemsRequest" << std::endl;
 }
 void Server::deleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsResponse *resp)
 {
-  auto req = getDeleteMonitoredItemsRequest(resp->responseHeader.requestHandle);
+  auto req = m_pendingDeleteMonitoredItemsRequests.get(resp->responseHeader.requestHandle);
   if (!req) {
     m_logger.log() << "request not found" << std::endl;
     return;
   }
   handleDeleteMonitoredItems(*req, *resp);
-}
-
-std::optional<DeleteMonitoredItemsRequest>
-Server::getDeleteMonitoredItemsRequest(UA_UInt32 requestHandle) {
-  // get the request
-  for (const auto &req : m_pendingDeleteMonitoredsRequests) {
-    if (req.raw()->requestHeader.requestHandle == requestHandle) {
-      return req;
-    }
-  }
-  return std::nullopt;
 }
 
 void Server::handleDeleteMonitoredItems(
@@ -104,26 +83,15 @@ void Server::handleDeleteMonitoredItems(
   printMonitoredItems();
 }
 
-std::optional<ActivateSessionRequest>
-Server::getActivateSessionRequest(UA_UInt32 requestHandle) {
-  // get the request
-  for (const auto &req : m_pendingActivateSessionRequests) {
-    if (req.raw()->requestHeader.requestHandle == requestHandle) {
-      return req;
-    }
-  }
-  return std::nullopt;
-}
-
 void Server::activateSessionRequest(
     const UA_ActivateSessionRequest *req) {
   ActivateSessionRequest r{req};
-  m_pendingActivateSessionRequests.push_back(r);
+  m_pendingActivateSessionRequests.add(r);
 }
 
 void Server::activateSessionResponse(
     const UA_ActivateSessionResponse *resp) {
-  auto req = getActivateSessionRequest(resp->responseHeader.requestHandle);
+  auto req = m_pendingActivateSessionRequests.get(resp->responseHeader.requestHandle);
   if (!req) {
     m_logger.log() << "request not found" << std::endl;
     return;
@@ -147,4 +115,28 @@ void Server::handleActivateSession(
   }
   m_logger.log() << std::endl;
   
+}
+
+void Server::createSessionRequest(
+    const UA_CreateSessionRequest *req) {
+  CreateSessionRequest r{req};
+  m_pendingCreateSessionRequests.add(r);
+}
+
+void Server::createSessionResponse(
+    const UA_CreateSessionResponse *resp) {
+  auto req = m_pendingCreateSessionRequests.get(resp->responseHeader.requestHandle);
+  if (!req) {
+    m_logger.log() << "request not found" << std::endl;
+    return;
+  }
+  handleCreateSession(*req, *resp);
+}
+
+void Server::handleCreateSession(const CreateSessionRequest& req,
+                                  const UA_CreateSessionResponse& resp)
+{
+  m_logger.log() << "createSessionRequest" << std::endl;
+  std::string appUri{(char*)req.raw()->clientDescription.applicationUri.data, req.raw()->clientDescription.applicationUri.length};
+  m_logger.log() << "applicationUri: " << appUri << std::endl;
 }
