@@ -4,6 +4,7 @@
 
 opcua::Server myServer{};
 
+
 void opcua_process_CreateMonitoredItemsRequest(const UA_CreateMonitoredItemsRequest* req)
 {
     myServer.createMonitoredItemsRequest(req);

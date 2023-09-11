@@ -2,8 +2,34 @@
 #include <Types.h>
 #include <optional>
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 namespace opcua {
+
+class Logger
+{
+public:
+  Logger()
+  {
+    logfile.open("./opcua.log", std::ios::out);
+  }
+
+  std::ofstream& log()
+  {
+    return logfile;
+  }
+
+  ~Logger()
+  {
+    logfile.close();
+  }
+
+private:
+  std::ofstream logfile;
+};
+
 class Server {
 public:
   void createMonitoredItemsRequest(const UA_CreateMonitoredItemsRequest *);
@@ -16,6 +42,7 @@ public:
   void activateSessionResponse(const UA_ActivateSessionResponse *);
 
 private:
+  Logger m_logger{};
   std::optional<CreateMonitoredItemsRequest>
   getCreateMonitoredItemsRequest(UA_UInt32 requestHandle);
   std::optional<DeleteMonitoredItemsRequest>
@@ -33,7 +60,4 @@ private:
   std::vector<ActivateSessionRequest> m_pendingActivateSessionRequests{};
   std::vector<MonitoredItem> m_monitoredItems{};
 };
-
-
-
 }; // namespace opcua

@@ -1,5 +1,4 @@
 #include "Server.h"
-#include <iostream>
 #include <vector>
 #include <algorithm>
 
@@ -12,6 +11,9 @@ void Server::createMonitoredItemsRequest(
     const UA_CreateMonitoredItemsRequest *req) {
   CreateMonitoredItemsRequest r{req};
   m_pendingCreateMonitoredsRequests.push_back(r);
+
+  m_logger.log() << "createMonitoredItemsRequest" << std::endl;
+
 }
 
 std::optional<CreateMonitoredItemsRequest>
@@ -51,9 +53,9 @@ void Server::handleCreateMonitoredItems(
 }
 
 void Server::printMonitoredItems() {
-  std::cout << "\nMonitoredItems: " << "\n";
+  m_logger.log() << "MonitoredItems: " << std::endl;
   for (const auto &m : m_monitoredItems) {
-    std::cout << m;
+    m_logger.log() << m << std::endl;
   }
 }
 
@@ -61,13 +63,13 @@ void Server::deleteMonitoredItemsRequest(const UA_DeleteMonitoredItemsRequest *r
 {
   DeleteMonitoredItemsRequest r{req};
   m_pendingDeleteMonitoredsRequests.push_back(r);
+  m_logger.log() << "deleteMonitoredItemsRequest" << std::endl;
 }
 void Server::deleteMonitoredItemsResponse(const UA_DeleteMonitoredItemsResponse *resp)
 {
   auto req = getDeleteMonitoredItemsRequest(resp->responseHeader.requestHandle);
   if (!req) {
-    std::cout << "request not found"
-              << "\n";
+    m_logger.log() << "request not found" << std::endl;
     return;
   }
   handleDeleteMonitoredItems(*req, *resp);
@@ -123,8 +125,7 @@ void Server::activateSessionResponse(
     const UA_ActivateSessionResponse *resp) {
   auto req = getActivateSessionRequest(resp->responseHeader.requestHandle);
   if (!req) {
-    std::cout << "request not found"
-              << "\n";
+    m_logger.log() << "request not found" << std::endl;
     return;
   }
   handleActivateSession(*req, *resp);
@@ -134,14 +135,16 @@ void Server::handleActivateSession(
     const ActivateSessionRequest &req,
     const UA_ActivateSessionResponse &resp) {
 
-      std::cout << "Activate Session" << "\n";
-      std::cout << "locale ids: " << "\n";
+    m_logger.log() << "Activate Session" << std::endl;
+    m_logger.log() << "locale ids: " << std::endl;
 
   // TODO: check statuscodes of response, resultsSize must be the same as
   // requestSize ...
   for(auto i=0u; i<req.raw()->localeIdsSize; ++i)
   {
     std::string id{(char*)req.raw()->localeIds[i].data, req.raw()->localeIds[i].length};
-    std::cout << id << ", ";
+    m_logger.log() << id << ", ";
   }
+  m_logger.log() << std::endl;
+  
 }

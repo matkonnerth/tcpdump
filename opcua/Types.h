@@ -37,7 +37,7 @@ public:
     os.write((char *)s.data, s.length);
     os << ", ";
     os << "SubscriptionId: " << std::to_string(m.m_subscriptionId) << ", ";
-    os << "ItemId: " << std::to_string(m.m_monitoredItemId) << "\n";
+    os << "ItemId: " << std::to_string(m.m_monitoredItemId);
     UA_String_clear(&s);
     return os;
   }
