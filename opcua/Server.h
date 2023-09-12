@@ -70,6 +70,9 @@ public:
   void activateSessionRequest(const UA_ActivateSessionRequest *);
   void activateSessionResponse(const UA_ActivateSessionResponse *);
 
+  void readRequest(const UA_ReadRequest*);
+  void readResponse(const UA_ReadResponse*);
+
 private:
   Logger m_logger{};
   
@@ -80,11 +83,14 @@ private:
                                   const UA_ActivateSessionResponse &);
   void handleCreateSession(const CreateSessionRequest &,
                                   const UA_CreateSessionResponse &);
+  void handleReadRequest(const ReadRequest&,
+      const UA_ReadResponse&);
   void printMonitoredItems();
   RequestContainer<CreateMonitoredItemsRequest> m_pendingCreateMonitoredItemsRequests{};
   RequestContainer<DeleteMonitoredItemsRequest> m_pendingDeleteMonitoredItemsRequests{};
   RequestContainer<ActivateSessionRequest> m_pendingActivateSessionRequests{};
   RequestContainer<CreateSessionRequest> m_pendingCreateSessionRequests{};
+  RequestContainer<ReadRequest> m_pendingReadRequests{};
   std::vector<MonitoredItem> m_monitoredItems{};
 };
 }; // namespace opcua

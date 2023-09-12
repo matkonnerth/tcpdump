@@ -46,11 +46,35 @@ static void handleOpcUaService(netdissect_options *ndo, const u_char *pptr,
   bs.length = len;
 
   switch (idNumeric) {
+  case 452:
+  {
+      UA_CloseSecureChannelRequest req;
+      UA_CloseSecureChannelRequest_init(&req);
+      UA_decodeBinary(&bs, &req, &UA_TYPES[UA_TYPES_CLOSESECURECHANNELREQUEST],
+          NULL);
+      //opcua_process_ReadRequest(&req);
+      UA_CloseSecureChannelRequest_clear(&req);
+  }
+  break;
   case 631:
-    ND_PRINT(", READ_REQUEST");
+    {
+        UA_ReadRequest req;
+        UA_ReadRequest_init(&req);
+        UA_decodeBinary(&bs, &req, &UA_TYPES[UA_TYPES_READREQUEST],
+            NULL);
+        opcua_process_ReadRequest(&req);
+        UA_ReadRequest_clear(&req);
+    }
     break;
   case 634:
-    ND_PRINT(", READ_RESPONSE");
+    {
+        UA_ReadResponse req;
+        UA_ReadResponse_init(&req);
+        UA_decodeBinary(&bs, &req, &UA_TYPES[UA_TYPES_READRESPONSE],
+            NULL);
+        opcua_process_ReadResponse(&req);
+        UA_ReadResponse_clear(&req);
+    }
     break;
   case 751: {
     UA_CreateMonitoredItemsRequest req;

@@ -43,3 +43,12 @@ void opcua_process_CreateSessionResponse(const UA_CreateSessionResponse* resp)
 {
   myServer.createSessionResponse(resp);
 }
+
+void opcua_process_ReadRequest(const UA_ReadRequest* req)
+{
+    myServer.readRequest(req);
+}
+void opcua_process_ReadResponse(const UA_ReadResponse* resp)
+{
+    myServer.readResponse(resp);
+}

@@ -139,4 +139,42 @@ void Server::handleCreateSession(const CreateSessionRequest& req,
   m_logger.log() << "createSessionRequest" << std::endl;
   std::string appUri{(char*)req.raw()->clientDescription.applicationUri.data, req.raw()->clientDescription.applicationUri.length};
   m_logger.log() << "applicationUri: " << appUri << std::endl;
+  
+  auto sessionId = resp.sessionId;
+  UA_String sessionIdString;
+  UA_String_init(&sessionIdString);
+  UA_NodeId_print(&sessionId, &sessionIdString);
+  std::string sid{(char*)sessionIdString.data, sessionIdString.length};
+  m_logger.log() << "sessionId: " << sid << std::endl;
+  UA_String_clear(&sessionIdString);
+}
+
+void Server::readRequest(const UA_ReadRequest* req)
+{
+    m_pendingReadRequests.add(req);
+}
+
+void Server::readResponse(const UA_ReadResponse* resp)
+{
+    auto req = m_pendingReadRequests.get(resp->responseHeader.requestHandle);
+    if (!req) {
+        m_logger.log() << "request not found" << std::endl;
+        return;
+    }
+    handleReadRequest(*req, *resp);
+}
+
+void Server::handleReadRequest(const ReadRequest& req,
+    const UA_ReadResponse& resp)
+{
+    m_logger.log() << "read request" << std::endl;
+    for (auto i = 0u; i < req.raw()->nodesToReadSize; ++i)
+    {
+        UA_String id;
+        UA_String_init(&id);
+        UA_NodeId_print(&req.raw()->nodesToRead[i].nodeId, &id);
+        std::string sid{ (char*)id.data, id.length };
+        m_logger.log() << "nodeId: " << sid << std::endl;
+        UA_String_clear(&id);        
+    }
 }

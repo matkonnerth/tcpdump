@@ -147,4 +147,27 @@ public:
 private:
   UA_CreateSessionRequest m_raw;
 };
+
+class ReadRequest {
+public:
+    ReadRequest(const UA_ReadRequest* raw) {
+        UA_ReadRequest_copy(raw, &m_raw);
+    }
+    ~ReadRequest() { UA_ReadRequest_clear(&m_raw); }
+
+    const UA_ReadRequest* raw() const { return &m_raw; }
+
+    ReadRequest(const ReadRequest& other) {
+        UA_ReadRequest_copy(&other.m_raw, &m_raw);
+    }
+
+    ReadRequest& operator=(const ReadRequest& other) {
+        UA_ReadRequest_clear(&m_raw);
+        UA_ReadRequest_copy(&other.m_raw, &m_raw);
+        return *this;
+    }
+
+private:
+    UA_ReadRequest m_raw;
+};
 } // namespace opcua

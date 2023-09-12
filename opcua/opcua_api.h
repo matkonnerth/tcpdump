@@ -18,6 +18,8 @@ void opcua_process_ActivateSessionRequest(const UA_ActivateSessionRequest *);
 void opcua_process_ActivateSessionResponse(const UA_ActivateSessionResponse *);
 void opcua_process_CreateSessionRequest(const UA_CreateSessionRequest*);
 void opcua_process_CreateSessionResponse(const UA_CreateSessionResponse*);
+void opcua_process_ReadRequest(const UA_ReadRequest*);
+void opcua_process_ReadResponse(const UA_ReadResponse*);
 #ifdef __cplusplus
 }
 #endif
