@@ -32,11 +32,20 @@ void Server::handleCreateMonitoredItems(
     const CreateMonitoredItemsRequest &req,
     const UA_CreateMonitoredItemsResponse &resp) {
 
+    if (resp.responseHeader.serviceResult != UA_STATUSCODE_GOOD)
+    {
+        m_logger.log() << "ERROR" << std::endl;
+    }
+
   // TODO: check statuscodes of response, resultsSize must be the same as requestSize ...
   for (auto i = 0u; i < req.raw()->itemsToCreateSize; ++i) {
     MonitoredItem m{req.raw()->subscriptionId,
                     req.raw()->itemsToCreate[i].itemToMonitor.nodeId, resp.results[i].monitoredItemId};
     m_monitoredItems.push_back(m);
+    if (resp.results[i].statusCode != UA_STATUSCODE_GOOD)
+    {
+        m_logger.log() << "ERROR" << std::endl;
+    }
   }
 
   printMonitoredItems();
