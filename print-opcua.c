@@ -148,20 +148,51 @@ static void handleOpcUaService(netdissect_options *ndo, const u_char *pptr,
 
 void opcua_print(netdissect_options *ndo, const u_char *pptr, u_int len) {
   ndo->ndo_protocol = "opcua";
-  ND_PRINT("opcua, size: %u", len);
-  struct opcua_message_header hdr;
-  ND_PRINT("MSG: %c%c%c%c", pptr[0], pptr[1], pptr[2], pptr[3]);
+  //ND_PRINT("opcua, size: %u", len);
 
-  pptr += 4; // messageType
-  hdr.size = GET_LE_U_4(pptr);
+  
 
-  ND_PRINT(", size %u", hdr.size);
+  int actLength = 0;
 
-  pptr += 4; // messageSize
-  pptr += 4; // secure channelid
-  pptr += 4; // security token id
-  pptr += 4; // security sequence number
-  pptr += 4; // security request id
+  while (actLength < len)
+  {
+      const u_char* actPtr = pptr + actLength;
+      struct opcua_message_header hdr;
+      ND_PRINT("MSG: %c%c%c%c", actPtr[0], actPtr[1], actPtr[2], actPtr[3]);
+      if (actPtr[0] != 77)
+      {
+          return;
+      }
+      if (actPtr[1] != 83)
+      {
+          return;
+      }
 
-  handleOpcUaService(ndo, pptr, len);
+      if (actPtr[2] != 71)
+      {
+          return;
+      }
+
+      if (actPtr[3] != 70)
+      {
+          return;
+      }
+
+
+
+      actPtr += 4; // messageType
+      hdr.size = GET_LE_U_4(actPtr);
+      ND_PRINT(", size %u", hdr.size);
+
+      actPtr += 4; // messageSize
+      actPtr += 4; // secure channelid
+      actPtr += 4; // security token id
+      actPtr += 4; // security sequence number
+      actPtr += 4; // security request id
+
+      handleOpcUaService(ndo, actPtr, hdr.size);
+      actLength += hdr.size;
+  }
+
+  
 }
